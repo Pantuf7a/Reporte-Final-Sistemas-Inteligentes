@@ -1,0 +1,189 @@
+% This is samplepaper.tex, a sample chapter demonstrating the
+% LLNCS macro package for Springer Computer Science proceedings;
+% Version 2.20 of 2017/10/04
+%
+\documentclass[runningheads]{llncs}
+%
+\usepackage{graphicx}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{multicol}
+
+% Used for displaying a sample figure. If possible, figure files should
+% be included in EPS format.
+%
+% If you use the hyperref package, please uncomment the following line
+% to display URLs in blue roman font according to Springer's eBook style:
+% \renewcommand\UrlFont{\color{blue}\rmfamily}
+
+\begin{document}
+%
+\title{Identificación de Bots en Twitter utilizando Random Forest.}
+%
+%\titlerunning{Abbreviated paper title}
+% If the paper title is too long for the running head, you can set
+% an abbreviated paper title here
+%
+\author{José Antonio Sánchez Sayago A01327909}
+%
+
+% First names are abbreviated in the running head.
+% If there are more than two authors, 'et al.' is used.
+%
+\institute{Instituto Tecnológico y de Estudios Superiores de Monterrey Campus Puebla }
+%
+\maketitle              % typeset the header of the contribution
+%
+\begin{abstract} 
+El siguiente artículo expone un modelo de "machine learning" para ayudar en la identificación de bots dentro de un dataset de 1500 tweets con una distribución aleatoria.Para la elaboración del modelo se utilizaron 2 datasets distintos que contenían únicamente tweets: uno de ellos contenía 1500 tweets sin clasificación previa y el segundo contenía 3000 tweets previamente clasificados como "bots" (2000) y "humanos" (1000).
+
+\keywords{Bots  \and Identificación Bots \and Twitter \and Clasificación.}
+\end{abstract}
+%
+%
+%
+\section{Introducción}
+Desde hace años que las redes sociales se ha convertido en uno de los principales, sino que probablemente los mayores, medios de comunicación, expresión e información para las personas en donde se exponen una gran cantidad de temas relevantes para las mismas personas. Y aunque esto pueda parecer algo bueno, pues la facilidad de su uso y difusión permite un gran alcance en poco tiempo, los procesos automáticos no tardaron en aparecer, mejor conocidos como "bots", que funcionan como la representación de otro ser humano para pasar desapercibido en las redes sociales. Dichos "bots" pueden tener un impacto positivo o negativo, dependiendo de la razón por la que sus creadores hayan tenido para elaborarlos, es decir, pueden servir para llevar un conteo exacto del proceso del año con cada día que pasa de forma automática o ayudar para tener un aviso temprano de distintas catástrofes naturales alrededor casi inmediatamente que fueron detectadas (temblores, inundaciones, etc.) o por otro lado, pueden ser usados como difusores de "información basura" para confundir y/o dirigir a las masas, suplantar la identidad de personas, etc.
+Es de esta dualidad en el uso de"bots" que nace la importancia de poder identificar si los usuarios de las redes sociales se encuentran ante una publicación real hecha por otra persona con información confiable o si se trata de un proceso automático creado con la intención de confundir.
+
+Es cierto que ya existen multiples investigaciones y proyectos enfocados en resolver dicho problema, sin embargo, en este proyecto a diferencia de muchos otros, es que no se cuenta con el análisis de multiples características de múltiples cuentas, aquí se realizó la identificación de bots através de una recolección de Tweets de diferentes cuentas sin nada más que el texto que contenían.Se contó con dos conjuntos de datos, el primero sirvió como entrenamiento y contenía 3000 tweets previamente clasificados entre "bot" y "humano" y el segundo conjunto que sirvió como prueba que contenía 1500 tweets con un desbalance entre la cantidad de tweets hechos por bots y humanos uno de entrenamiento además de una distribución aleatoria, agregando complejidad al problema.
+% End: Introduction
+
+\section{Propuesta} \label{Proposal}
+
+\subsection{Datos} \label{Data}
+Se cuenta con dos conjuntos de datos, uno de entrenamiento y uno de evaluación con 3000 y 1500 tweets respectivamente, previamente clasificados como bots y humanos. Cada instancia contiene el id para identificarlo, el texto del tweet y la clase (en el caso del conunto de entrenamiento). El conjunto de entrenamiento presenta imbalance de clases, ya que 2000 de los 3000 tweets son de bots y los restantes de humanos. No conocemos la distribución de clases en el conjunto de evaluación.
+
+Para la elaboración de este proyecto se contó con 2 conjuntos de datos. Uno contiene 3000 tweets previamente clasificados y ordenados entre "bots" y "humanos", identificados por "id" (número de tweet), "texto del tweet" y "clasificación" a la que pertenece. El segundo conjunto contiene 1500 tweets sin clasificar y con una distribución aleatoria, es decir, que los tweets de bots y humanos no estaban ordenados y sin clasificar, este conjunto se usó para la evaluación de modelo y así determinar que tan exacto resultaba nuestro análisis, dichos datos sólo contaba con "id" y "texto" (tweet).
+%End: Datos
+
+\subsection{Extracción de características}
+Para el análisis de los tweets de cada conjunto de datos, se extrajeron un total de 2 características que se muestran en la Tabla~\ref{tab1}.
+
+\begin{table}
+\centering
+\caption{Características obtenidas.}\label{tab1}
+\begin{tabular}{|l|c|}
+\hline
+Categoría & Característica\\
+\hline
+{\bfseries Twitter} & Número de hashtags  \\
+    & Número de menciones  \\
+\hline
+{\bfseries Análisis de sentimientos} & Positividad\\
+    & Acuerdo \\
+    & Confianza  \\
+    & Subjetividad  \\
+    & Ironía  \\
+    & Polaridad \\
+\hline
+{\bfseries Análisis de emociones} & Tristeza \\
+    & Sorpresa \\
+    & Miedo  \\
+    & Enojo \\
+    & Alegria \\
+\hline
+{\bfseries Análisis de personalidad} & Extraversión\\
+    & Apertura \\
+    & Amabilidad \\
+    & Escrupulosidad \\
+\hline
+{\bfseries Signos de Puntuación} & Total de signos\\
+    & Cantidad de comas\\
+    & Cantidad de puntos\\
+    & Cantidad de guiones\\
+    & Cantidad de signos de interrogración\\
+\hline
+\end{tabular}
+\end{table}
+
+La tabla~\ref{tab1} muestra las características extraídas de los tweets en diferentes grupos: Twitter son características que son únicas de un "tweet", análisis de sentimientos (Meaning Cloud API), análisis de emociones (Indico API), Análisis de personalidad (Indico), signos de puntuación.
+
+% End sub: Extracción de características
+
+\subsection{Selección de características}
+Una vez obtenidas distintas características, aún cuando se hicieron experimentos usando todas, se optó por usar diferentes evaluadores de "características" (atributos) con la esperanza de obtener resultados con mejor eficacia. Una vez arrojados los valores se hicieron distitnas pruebas usando únicamente las características mostradas por los evaluadores para apresiar qué resultados se obtenían. Naturalmente los evaluadores nos mostraban resultados distintos pero en el mayor de los casos se arrojó que se usaran todas las características encontradas.
+
+Lista de características seleccionadas:
+
+\begin{multicols}{3}
+    \begin{itemize}
+        \item Positividad
+        \item Polaridad
+        \item Acuerdo
+        \item Subjetividad
+        \item Ironía
+        \item Confianza
+        \item Enojo
+        \item Alegría
+        \item Miedo
+        \item Trizteza
+        \item Sorpresa
+        \item Extraversión
+        \item Apertura
+        \item Amabilidad
+        \item Escrupulosidad
+        \item No. de menciones
+        \item No. de hashtags
+        \item No. de signos de puntuación
+    \end{itemize}
+\end{multicols}
+Con esto, tenemos seleccionadas 19 características con las que trabajarán los clasificadores para el análisis.
+% End: Selección de características
+
+\subsection{Selección de clasificador}
+Se hicieron distintas pruebas con diferentes clasificadores y distinta cantidad de características, fueron 3 los clasificadores que arrojaron mejores resultados a lo largo de las distintas pruebas: Baggin, Random Forest y Bayes Network. 
+Una vez ya definido el modelo con las características seleccionadas, se decidió probar nuevamente con estos clasificadores, y arrojaron los siguientes resultados:
+
+\begin{table}
+\centering
+\caption{Resultados Clasificadores.}\label{tab2}
+\begin{tabular}{|l|c|}
+\hline
+{\bfseries Clasificador} & {\bfseries Eficacia}\\ \hline
+Random Forest & 75.901\% \\ \hline
+Bayes Net & 65.633\% \\ \hline
+Baggin & 72.699\% \\ \hline
+\end{tabular}
+\end{table}
+
+% End: Selección de clasificador
+
+\section{Disposición experimental}
+Para la extracción de las características de ambos conjuntos de datos, se utilizaron 2 programas escritos en JavaScript que hacen peticiones HTTP, uno a la API de Meaning Cloud y el otro a la API de Indico. Para la extracción de los signos de puntuación y cantidad de menciones en los tweets se ocupó una fórmula sencilla en excel.
+
+Para el análisis se hizo uso del programa "Weka" que se encarga de la ejecución de los diferentes algoritmos utilizados; para la ejecución de los algoritmos de selección de características, los clasificadores (RandomForest, Baggins y BayesNet). Y los resultados obtenidos se mostraban en un archivo con formato CSV. Con los resultados en dicho formato, se hacían unas pequeñas modificaciones al archivo para que fuera soportado por Kaggle, que era donde se comparaba y daba una calificación a los resultados obtenidos por los modelos usados.
+%End: Disposición experimental
+
+\section{Resultados y discusión}
+
+%End: Resultados y discusión
+ Como ya se mostró en la tabla, los mejores resultados se obtuvieron através de los clasificadores "Random Forest", "Bayes Network", y "Baggins", utilizando las 19 características seleccionadas con los evaluadores. Sin embargo, aunque considero que un 75\% de eficacia en los resultados es bueno, pienso que al no contar con nada más que los tweets de diferentes cuentas que pueden o no estar relacionadas entre ellas, es bastante difícil alcanzar un porcentaje cercano al 100\%, tampoco lo considero imposible pero sin duda el hacer análisis de cada cuenta podría resultar mejor para obtener una clasificación más precisa y así distinguir con mayor seguridad entre los tweets de un "bot" y un "humano", pues se cuentan con características que por si solos los tweets no nos pueden proporcionar, como frecuencia de escritura, promedio de errores ortográficos por tweet, cantidad de seguidores, cantidad cuentas a las que siguen, imagen de cuenta, etc. 
+
+\section{Conclusión}
+Gracias a este proyecto podemos ampliar nuestro panorama en cuanto a la relevancia e impacto que tienen los procesos automáticos en las redes sociales y la influencia que estos pueden tener en los usuarios, que son millones cada día, ya sea para bien o para mal. Resultó ser una investigación bastante interesante pues uno como usuario final de redes sociales, pocas veces nos ponemos a pensar en todos los patrones que se pueden extraer de todo lo que compartimos, decimos, y exponemos en redes sociales sin darnos cuenta. Yo al ser un individuo bastante activo en redes sociales, me entra la curiosidad si este, o los modelos mejor desarrollados, podrán llegar a confundir lo que escribo o si siempre estarán seguros que se trata de un ser humano. 
+
+Y no sólo se logró una reflexión sobre el uso e impacto en redes sociales, además se desarrolló un modelo con un 75\% de eficacia en la detección de bots usando únicamente el texto (tweet) sin conocer más de la cuenta que lo haya escrito. Lo cual me parece algo bastante impresionante porque si esto se logra con tan "poco",¿qué más se podría conseguir con un análisis mucho más profundo y mejor elaborado? 
+%End: Conclusión
+
+%
+% ---- Bibliography ----
+%
+% BibTeX users should specify bibliography style 'splncs04'.
+% References will then be sorted and formatted in the correct style.
+%
+% \bibliographystyle{splncs04}
+% \bibliography{mybibliography}
+%
+\begin{thebibliography}{8}
+\bibitem{ref_article1}
+Author, Svitlana Volkova Eric Bell: Identifying Effective Signals to Predict Deleted and Suspended Accounts Twitter across Languages. 
+
+\bibitem{ref_article2}
+Author, Almuhimedi, H.; Wilson, S.; Liu, B.; Sadeh, N.; and Acquisti,
+A. 2013. Tweets are forever: a large-scale quantitative
+analysis of deleted tweets. In Proceedings of CSCW,
+897–908.
+
+\end{thebibliography}
+\end{document}
